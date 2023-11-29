@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "846511312770",
+    "project_id": "albastack-c3e57",
+    "storage_bucket": "albastack-c3e57.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:846511312770:android:f578ea4830247b1c23499b",
+        "android_client_info": {
+          "package_name": "org.techtown.albastack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAr6ROAGe0VUjRL6mY0z-P1uVgqbE4pbE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
