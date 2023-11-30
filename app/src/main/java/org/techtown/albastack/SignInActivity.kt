@@ -12,11 +12,9 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 
 class SignInActivity : AppCompatActivity() {
 
@@ -43,7 +41,7 @@ class SignInActivity : AppCompatActivity() {
         val btnSave = findViewById<Button>(R.id.btn_account_save)
 
         // Cloud Firestore 초기화
-        val db = Firebase.firestore
+        //val db = Firebase.firestore
 
         spinner.adapter = ArrayAdapter.createFromResource(this, R.array.jobList, android.R.layout.simple_spinner_item)
 
@@ -81,7 +79,7 @@ class SignInActivity : AppCompatActivity() {
                 .addOnCompleteListener(this) {task ->
                     if (task.isSuccessful) {
                         // 회원가입 성공 시 데이터 Firebase에 저장
-                        saveDataToFirebase(selectedJob, selectedSex, name, email)
+                        saveDataToFirebase(selectedJob, selectedSex, password, name, email)
                         Toast.makeText(this@SignInActivity, "회원가입 성공", Toast.LENGTH_SHORT).show()
                         moveToLoginActivity()
                     } else {
@@ -113,7 +111,7 @@ class SignInActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveDataToFirebase(selectedJob: String, selectedSex: String, name: String, email: String) {
+    private fun saveDataToFirebase(selectedJob: String, selectedSex: String, password: String, name: String, email: String) {
         val currentUser = auth.currentUser
 
         currentUser?.let {
@@ -125,6 +123,7 @@ class SignInActivity : AppCompatActivity() {
                 mapOf(
                     "selected_job" to selectedJob,
                     "selected_sex" to selectedSex,
+                    "password" to password,
                     "name" to name,
                     "email" to email
                 )

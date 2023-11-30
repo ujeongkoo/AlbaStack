@@ -6,4 +6,16 @@
         android:icon="@drawable/icon_home"
         android:title="홈" />
 
+    <item
+        android:id="@+id/menu_plus"
+        android:enabled="true"
+        android:icon="@drawable/icon_plus"
+        android:title="추가" />
+
+    <item
+        android:id="@+id/menu_mypage"
+        android:enabled="true"
+        android:icon="@drawable/icon_person"
+        android:title="마이페이지" />
+
 </menu>
