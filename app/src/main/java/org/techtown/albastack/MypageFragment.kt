@@ -12,17 +12,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
-import com.google.firebase.auth.EmailAuthCredential
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import com.google.firebase.auth.oAuthCredential
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -116,30 +115,47 @@ class MypageFragment : Fragment() {
 
     private fun withdraw() {
         val currentUser = auth.currentUser
-        val email = "aoyujeong@naver.com"
-        val password = "7290yjeo^^"
 
-        val credential = EmailAuthProvider.getCredential(email, password)
+        val builder = AlertDialog.Builder(requireContext())
+        val inflater = layoutInflater
+        val dialogView = inflater.inflate(R.layout.popup_withdraw, null)
 
-        // Firebase Authentication에서 사용자 삭제 전에 다시 로그인
-        currentUser?.reauthenticate(credential)
-            ?.addOnCompleteListener { reauthTask ->
-                if (reauthTask.isSuccessful) {
-                    // 사용자가 성공적으로 재인증된 경우
-                    currentUser?.delete()
-                    // 삭제 작업 수행
-                    deleteFirestoreData(currentUser.uid)
-                    deleteStorageData(currentUser.uid)
+        val emailEditText = dialogView.findViewById<EditText>(R.id.popup_email)
+        val passwordEditText = dialogView.findViewById<EditText>(R.id.popup_password)
 
-                    // 로그인 페이지로 이동
-                    val intent = Intent(requireContext(), LoginActivity::class.java)
-                    startActivity(intent)
-                    requireActivity().finish()
-                } else {
-                    // 재인증 실패
-                    Log.e("MypageFragment", "재인증 실패", reauthTask.exception)
+        builder.setView(dialogView)
+            .setPositiveButton("회원탈퇴") { dialog, _ ->
+                val userEmail = auth.currentUser?.email
+                val inputEmail = emailEditText.text.toString()
+                val inputPassword = passwordEditText.text.toString()
+
+                if (userEmail == inputEmail) {
+                    val credential = EmailAuthProvider.getCredential(inputEmail, inputPassword)
+
+                    currentUser?.reauthenticate(credential)
+                        ?.addOnCompleteListener { reauthTask ->
+                            if (reauthTask.isSuccessful) {
+                                currentUser?.delete()
+
+                                deleteFirestoreData(currentUser.uid)
+                                deleteStorageData(currentUser.uid)
+
+                                val intent = Intent(requireContext(), LoginActivity::class.java)
+                                startActivity(intent)
+                                requireActivity().finish()
+                            } else {
+                                Log.e("MypageFragment", "재인증 실패", reauthTask.exception)
+                            }
+                            dialog.dismiss()
+
+                        }
                 }
             }
+            .setNegativeButton("취소") {dialog, _ ->
+                dialog.cancel()
+            }
+
+        builder.create().show()
     }
 
     private fun deleteFirestoreData(userId: String) {
@@ -254,7 +270,7 @@ class MypageFragment : Fragment() {
                 }
             }
             .addOnFailureListener { exception ->
-                Log.e("DeleteImage", "Failed to delete images: $exception")
+                Log.e("DeleteImage", "이미지 삭제 실패: $exception")
             }
     }
 
@@ -287,7 +303,7 @@ class MypageFragment : Fragment() {
                     storageRef.downloadUrl.addOnSuccessListener { uri ->
                         Glide.with(this).load(uri).into(imageView)
                     }.addOnFailureListener {e ->
-                        Log.e("LoadImage", "Image loading failed: ${e.message}", e)
+                        Log.e("LoadImage", "이미지 로딩 실패: ${e.message}", e)
                         imageView.setImageResource(R.drawable.basic_image)
                     }
                 }

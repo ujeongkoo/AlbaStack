@@ -3,12 +3,134 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".InfoPlusFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="출근시간을 입력해주세요"
+                    android:textSize="25sp"
+                    android:fontFamily="@font/bmhannaprop" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btn_date"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/infoplus_btn1"
+                    android:text="날짜"
+                    android:textSize="20dp"
+                    android:fontFamily="@font/bmhannaprop" />
+
+                <Button
+                    android:id="@+id/btn_attendance"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/infoplus_btn1"
+                    android:text="출근시간"
+                    android:textSize="20dp"
+                    android:fontFamily="@font/bmhannaprop" />
+
+                <Button
+                    android:id="@+id/btn_leave"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_marginLeft="10dp"
+                    android:background="@drawable/infoplus_btn1"
+                    android:text="퇴근시간"
+                    android:textSize="20dp"
+                    android:fontFamily="@font/bmhannaprop" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/date_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="날짜: "
+                    android:textSize="20sp"
+                    android:fontFamily="@font/bmhannaprop" />
+
+                <TextView
+                    android:id="@+id/attendance_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="출근 시간: "
+                    android:textSize="20sp"
+                    android:fontFamily="@font/bmhannaprop" />
+
+                <TextView
+                    android:id="@+id/leave_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="퇴근 시간: "
+                    android:textSize="20sp"
+                    android:fontFamily="@font/bmhannaprop" />
+
+                <TextView
+                    android:id="@+id/work_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="총 근무 시간: "
+                    android:textSize="20sp"
+                    android:fontFamily="@font/bmhannaprop" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btn_work_submit"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/infoplus_btn2"
+                    android:text="근무시간 추가하기"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/bmhannaprop" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
 
 </FrameLayout>
