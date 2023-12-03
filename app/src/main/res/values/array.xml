@@ -4,4 +4,8 @@
         <item>직원</item>
         <item>자영업자</item>
     </string-array>
+
+    <string-array name="storeList">
+        <item>직접 입력</item>
+    </string-array>
 </resources>

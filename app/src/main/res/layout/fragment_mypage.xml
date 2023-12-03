@@ -88,22 +88,6 @@
 
             </LinearLayout>
 
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/time_card_view"
-                android:layout_width="350dp"
-                android:layout_height="150dp"
-                android:layout_gravity="center"
-                app:cardBackgroundColor="#E5E5E5"
-                app:cardCornerRadius="15dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="여기에 시간이 표시됩니다." />
-
-            </androidx.cardview.widget.CardView>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -127,13 +111,28 @@
                     android:textSize="20sp" />
 
                 <Button
+                    android:id="@+id/btn_setstore"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:background="@drawable/mypage_btn"
+                    android:drawableLeft="@drawable/icon_shop"
+                    android:fontFamily="@font/bmhannaprop"
+                    android:paddingLeft="10dp"
+                    android:text="우리 가게 설정"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
+
+                <Button
                     android:id="@+id/btn_worktime"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
                     android:background="@drawable/mypage_btn"
-                    android:drawableLeft="@drawable/icon_shop"
+                    android:drawableLeft="@drawable/icon_coworker"
                     android:fontFamily="@font/bmhannaprop"
                     android:paddingLeft="10dp"
                     android:text="우리 가게 근무 시간"

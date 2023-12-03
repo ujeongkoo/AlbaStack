@@ -11,17 +11,18 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.google.android.gms.tasks.Task
-import com.google.firebase.Firebase
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -36,6 +37,13 @@ class MypageFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var storage: FirebaseStorage
     private lateinit var imageViewUser: ImageView
+    private lateinit var spinnerStore: Spinner
+    private lateinit var storeEditText: EditText
+    private lateinit var btnAddStore: Button
+
+    private lateinit var storeList: ArrayList<String>
+    private lateinit var storeAdapter: ArrayAdapter<String>
+
     private var pickImageFromAlbum = 0
     private var uriPhoto : Uri? = null
 
@@ -56,7 +64,7 @@ class MypageFragment : Fragment() {
         // user_image ImageView 초기화
         imageViewUser = view.findViewById(R.id.user_image)
         // FirebaseAuth 및 FirebaseFirestore 인스턴스 초기화
-        auth = Firebase.auth
+        auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
         storage = FirebaseStorage.getInstance()
 
@@ -72,6 +80,15 @@ class MypageFragment : Fragment() {
             var photoPickerIntent = Intent(Intent.ACTION_PICK)
             photoPickerIntent.type = "image/*"
             startActivityForResult(photoPickerIntent, pickImageFromAlbum)
+        }
+
+        val buttonSetStore: Button = view.findViewById(R.id.btn_setstore)
+        buttonSetStore.setOnClickListener {
+            try {
+            showSetStore()
+            } catch(e: Exception) {
+                Log.e("MyPageFragment", "${e.message}")
+            }
         }
 
         // mypage_logout TextView 초기화
@@ -96,6 +113,102 @@ class MypageFragment : Fragment() {
         val intent = Intent(requireContext(), LoginActivity::class.java)
         startActivity(intent)
     }
+
+    private fun showSetStore() {
+
+        val builder = AlertDialog.Builder(requireContext())
+        val inflater = layoutInflater
+        val dialogView = inflater.inflate(R.layout.popup_setstore, null)
+
+        spinnerStore = dialogView.findViewById(R.id.spinner_store)
+        storeEditText = dialogView.findViewById(R.id.spinner_store_name_editext)
+        btnAddStore = dialogView.findViewById(R.id.btn_store_name_add)
+
+        initStoreSpinner()
+
+        spinnerStore.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                val selectedStore = spinnerStore.selectedItem.toString()
+                if (selectedStore == "직접 입력") {
+                    storeEditText.visibility = View.VISIBLE
+                    btnAddStore.visibility = View.VISIBLE
+                } else {
+                    storeEditText.visibility = View.GONE
+                    btnAddStore.visibility = View.GONE
+                }
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+
+        }
+
+        btnAddStore.setOnClickListener {
+            val newStoreName = storeEditText.text.toString().trim()
+            if(newStoreName.isNotEmpty()) {
+                addStoreToFirebase(newStoreName)
+                loadStore()
+                storeEditText.text.clear()
+            }
+        }
+
+        builder.setView(dialogView)
+            .setPositiveButton("설정하기") { dialog, _ ->
+
+                // Spinner에서 선택한 가게 ID 가져오기
+
+
+            }
+            .setNegativeButton("취소") { dialog, _ ->
+                dialog.cancel()
+            }
+
+        builder.create().show()
+    }
+
+
+    private fun initStoreSpinner() {
+        storeList = ArrayList()
+        storeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, storeList)
+        storeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerStore.adapter = storeAdapter
+
+        loadStore()
+
+    }
+
+    private fun loadStore() {
+
+        val storesRef = firestore.collection("stores")
+
+        storesRef.get().addOnSuccessListener { result ->
+            for (document in result) {
+                val storeName = document.getString("name")
+                storeName?.let { storeList.add(it) }
+            }
+
+            storeList.add("직접 입력")
+            storeAdapter.notifyDataSetChanged()
+        } .addOnFailureListener { exception ->
+            Toast.makeText(requireContext(), "가게 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+        }
+
+    }
+
+    private fun addStoreToFirebase(newStoreName: String) {
+        val store = hashMapOf("name" to newStoreName)
+
+        firestore.collection("stores")
+            .add(store)
+            .addOnCompleteListener { task ->
+                if(task.isSuccessful) {
+                    Toast.makeText(requireContext(), "가게가 추가되었습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "가게 추가가 실패하였습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
 
     private fun showWithdrawPopup() {
         val builder = AlertDialog.Builder(requireContext())
@@ -143,6 +256,7 @@ class MypageFragment : Fragment() {
                                 val intent = Intent(requireContext(), LoginActivity::class.java)
                                 startActivity(intent)
                                 requireActivity().finish()
+                                Toast.makeText(requireContext(), "안녕히가세요!", Toast.LENGTH_SHORT).show()
                             } else {
                                 Log.e("MypageFragment", "재인증 실패", reauthTask.exception)
                             }

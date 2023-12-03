@@ -23,6 +23,7 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var databaseReference: FirebaseDatabase
     private lateinit var firestore: FirebaseFirestore
 
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
@@ -32,18 +33,15 @@ class SignInActivity : AppCompatActivity() {
         databaseReference = FirebaseDatabase.getInstance()
         firestore = FirebaseFirestore.getInstance() // Firestore 초기화
 
-        val spinner = findViewById<Spinner>(R.id.spinner_job)
         val nameEditText = findViewById<EditText>(R.id.signin_name)
         val emailEditText = findViewById<EditText>(R.id.signin_id)
         val passwordEditText = findViewById<EditText>(R.id.signin_pw)
         val passwordCheckEditText = findViewById<EditText>(R.id.signin_pw_again)
         val passwordCheckText = findViewById<TextView>(R.id.signin_pw_check)
+        val spinnerJob = findViewById<Spinner>(R.id.spinner_job)
         val btnSave = findViewById<Button>(R.id.btn_account_save)
 
-        // Cloud Firestore 초기화
-        //val db = Firebase.firestore
-
-        spinner.adapter = ArrayAdapter.createFromResource(this, R.array.jobList, android.R.layout.simple_spinner_item)
+        spinnerJob.adapter = ArrayAdapter.createFromResource(this, R.array.storeList, android.R.layout.simple_spinner_item)
 
         passwordCheckEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -72,11 +70,11 @@ class SignInActivity : AppCompatActivity() {
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
             val name = nameEditText.text.toString()
-            val selectedJob = spinner.selectedItem.toString()
+            val selectedJob = spinnerJob.selectedItem.toString()
             val selectedSex = getSelectedSex()
 
             auth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this) {task ->
+                .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
                         // 회원가입 성공 시 데이터 Firebase에 저장
                         saveDataToFirebase(selectedJob, selectedSex, name, email)

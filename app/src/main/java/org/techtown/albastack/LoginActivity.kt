@@ -3,6 +3,7 @@ package org.techtown.albastack
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -31,8 +32,12 @@ class LoginActivity : AppCompatActivity() {
         }
 
         btn_sign_in.setOnClickListener {
-            val intent = Intent(this, SignInActivity::class.java)
-            startActivity(intent)
+            try {
+                val intent = Intent(this, SignInActivity::class.java)
+                startActivity(intent)
+            } catch (e: Exception) {
+                Log.e("LoginActivity", "오류: ${e.message}")
+            }
         }
     }
 
