@@ -154,9 +154,11 @@ class MypageFragment : Fragment() {
 
         builder.setView(dialogView)
             .setPositiveButton("설정하기") { dialog, _ ->
+                val storeName = spinnerStore.selectedItem.toString()
+                val userId = auth.currentUser?.uid.toString()
 
-                // Spinner에서 선택한 가게 ID 가져오기
-
+                // Spinner에서 선택한 가게이름 users에 추가하기
+                addStoreName(storeName, userId)
 
             }
             .setNegativeButton("취소") { dialog, _ ->
@@ -164,6 +166,17 @@ class MypageFragment : Fragment() {
             }
 
         builder.create().show()
+    }
+
+    private fun addStoreName(storeName: String, userId: String) {
+        val userDocument = firestore.collection("users").document(userId)
+        userDocument.update("storeName", storeName)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "가게 멤버가 되셨습니다!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "멤버 되기에 실패하셨습니다.", Toast.LENGTH_SHORT).show()
+            }
     }
 
 

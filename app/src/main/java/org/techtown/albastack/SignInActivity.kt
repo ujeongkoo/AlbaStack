@@ -41,7 +41,7 @@ class SignInActivity : AppCompatActivity() {
         val spinnerJob = findViewById<Spinner>(R.id.spinner_job)
         val btnSave = findViewById<Button>(R.id.btn_account_save)
 
-        spinnerJob.adapter = ArrayAdapter.createFromResource(this, R.array.storeList, android.R.layout.simple_spinner_item)
+        spinnerJob.adapter = ArrayAdapter.createFromResource(this, R.array.jobList, android.R.layout.simple_spinner_item)
 
         passwordCheckEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
