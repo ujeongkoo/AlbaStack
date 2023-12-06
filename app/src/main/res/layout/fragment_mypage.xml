@@ -137,7 +137,8 @@
                     android:paddingLeft="10dp"
                     android:text="우리 가게 근무 시간"
                     android:textColor="@color/black"
-                    android:textSize="20sp" />
+                    android:textSize="20sp"
+                    android:visibility="gone" />
 
             </LinearLayout>
 

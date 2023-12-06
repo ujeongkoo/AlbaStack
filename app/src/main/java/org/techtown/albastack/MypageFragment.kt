@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -16,9 +17,13 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.EmailAuthProvider
@@ -38,11 +43,19 @@ class MypageFragment : Fragment() {
     private lateinit var storage: FirebaseStorage
     private lateinit var imageViewUser: ImageView
     private lateinit var spinnerStore: Spinner
+    private lateinit var spinnerMonth: Spinner
     private lateinit var storeEditText: EditText
+    private lateinit var hourPay: EditText
+    private lateinit var monthPay: TextView
     private lateinit var btnAddStore: Button
+    private lateinit var btnMonthPay: Button
+    private lateinit var btnMemberCheck: Button
+
 
     private lateinit var storeList: ArrayList<String>
     private lateinit var storeAdapter: ArrayAdapter<String>
+
+    private lateinit var monthList: ArrayList<String>
 
     private var pickImageFromAlbum = 0
     private var uriPhoto : Uri? = null
@@ -82,12 +95,55 @@ class MypageFragment : Fragment() {
             startActivityForResult(photoPickerIntent, pickImageFromAlbum)
         }
 
+        val buttonMonthPay: Button = view.findViewById(R.id.btn_paycheck)
+        buttonMonthPay.setOnClickListener {
+            try {
+                showpayCheck()
+            } catch(e: Exception) {
+                Log.e("MyPageFragment", "${e.message}")
+            }
+        }
+
         val buttonSetStore: Button = view.findViewById(R.id.btn_setstore)
         buttonSetStore.setOnClickListener {
             try {
             showSetStore()
             } catch(e: Exception) {
                 Log.e("MyPageFragment", "${e.message}")
+            }
+        }
+
+        btnMemberCheck = view.findViewById(R.id.btn_worktime)
+        val userId = auth.currentUser?.uid.toString()
+        val userRef = firestore.collection("users").document(userId)
+
+        userRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val document: DocumentSnapshot? = task.result
+                if (document != null && document.exists()) {
+                    val userJob = document.getString("selected_job")
+                    Log.d("MypageFragment", "${userJob}")
+
+                    if (userJob == "자영업자") {
+                        btnMemberCheck.visibility = View.VISIBLE
+                        btnMemberCheck.setOnClickListener {
+                            try {
+                                userRef.get()
+                                    .addOnSuccessListener { document ->
+                                        if (document.exists()) {
+                                            val storeName = document.getString("storeName").toString()
+                                            popupMember(storeName)
+                                        }
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.e("MypageFragment", "에러 발생", exception)
+                                    }
+                            } catch(e: Exception) {
+                                Log.e("MyPageFragment", "${e.message}")
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -112,6 +168,77 @@ class MypageFragment : Fragment() {
         auth.signOut()
         val intent = Intent(requireContext(), LoginActivity::class.java)
         startActivity(intent)
+    }
+
+    private fun showpayCheck() {
+
+        val builder = AlertDialog.Builder(requireContext())
+        val inflater = layoutInflater
+        val dialogView = inflater.inflate(R.layout.popup_paycheck, null)
+
+        spinnerMonth = dialogView.findViewById(R.id.spinner_paycheck_month)
+        hourPay = dialogView.findViewById(R.id.hourpay_edittext)
+        monthPay = dialogView.findViewById(R.id.paycheck_textView)
+        btnMonthPay = dialogView.findViewById(R.id.btn_month_calculate)
+
+        val monthArray = resources.getStringArray(R.array.monthList)
+        monthList = ArrayList(monthArray.toList())
+
+        val monthAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, monthList)
+        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerMonth.adapter = monthAdapter
+        spinnerMonth.setSelection(0)
+
+        spinnerMonth.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                btnMonthPay.setOnClickListener {
+                    val selectedMonth = spinnerMonth.selectedItem.toString()
+                    val userId = auth.currentUser?.uid.toString()
+                    val dataRef = firestore.collection("users").document(userId)
+                        .collection("total_workDuration").document("2023년 ${selectedMonth}월 근무시간")
+
+                    dataRef.get().addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val workDuration =
+                                Regex("""(\d+)시간 (\d+)분""").find(task.result.toString())
+                            val inputPay = hourPay.text.toString()
+                            val final_inputPay = inputPay.toIntOrNull() ?: 0
+
+                            if (workDuration != null) {
+                                val minute = workDuration.groupValues[2].toInt()
+                                if (minute >= 30) {
+                                    val hour = workDuration.groupValues[1].toInt() + 1
+
+                                    calculatePay(final_inputPay, hour, monthPay)
+                                } else {
+                                    val hour = workDuration.groupValues[1].toInt()
+
+                                    calculatePay(final_inputPay, hour, monthPay)
+                                }
+                            } else {
+                                Log.d("PayCalculation", "${selectedMonth}")
+                            }
+                        }
+                    }
+                }
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        }
+
+        builder.setView(dialogView)
+            .setNegativeButton("취소") { dialog, _ ->
+                dialog.cancel()
+            }
+
+        builder.create().show()
+    }
+
+    private fun calculatePay(final_inputPay: Int, hour: Int, monthPay: TextView) {
+        val finalPay = final_inputPay * hour
+        Log.d("PayCalculation", "Final Pay: $finalPay")
+        monthPay.text = "이번달 월급은 ${finalPay}원 입니다."
     }
 
     private fun showSetStore() {
@@ -159,6 +286,7 @@ class MypageFragment : Fragment() {
 
                 // Spinner에서 선택한 가게이름 users에 추가하기
                 addStoreName(storeName, userId)
+                addMemberName(storeName)
 
             }
             .setNegativeButton("취소") { dialog, _ ->
@@ -170,6 +298,7 @@ class MypageFragment : Fragment() {
 
     private fun addStoreName(storeName: String, userId: String) {
         val userDocument = firestore.collection("users").document(userId)
+
         userDocument.update("storeName", storeName)
             .addOnSuccessListener {
                 Toast.makeText(requireContext(), "가게 멤버가 되셨습니다!", Toast.LENGTH_SHORT).show()
@@ -177,6 +306,25 @@ class MypageFragment : Fragment() {
             .addOnFailureListener {
                 Toast.makeText(requireContext(), "멤버 되기에 실패하셨습니다.", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun addMemberName (storeName: String) {
+
+        val userId = auth.currentUser?.uid.toString()
+        val nameRef = firestore.collection("users").document(userId)
+        val storeRef = firestore.collection("stores").document(storeName)
+        nameRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val document: DocumentSnapshot = task.result
+                val userName = document.getString("name")
+                if (userName != null) {
+                    storeRef.update("storeMember", userName)
+                        .addOnSuccessListener {
+                            Log.d("MypageFragment", "멤버 업데이트 성공")
+                        }
+                }
+            }
+        }
     }
 
 
@@ -209,6 +357,7 @@ class MypageFragment : Fragment() {
     }
 
     private fun addStoreToFirebase(newStoreName: String) {
+
         val store = hashMapOf("name" to newStoreName)
 
         firestore.collection("stores")
@@ -338,7 +487,6 @@ class MypageFragment : Fragment() {
                         userName?.let {
                             textView.text = "$it 님 안녕하세요!"
                         }
-                    } else {
                     }
                 }
             }
@@ -413,6 +561,147 @@ class MypageFragment : Fragment() {
             .addOnFailureListener {
                 Toast.makeText(requireContext(), "프로필 이미지 URL 업데이트 실패", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun popupMember(storeName: String) {
+        val builder = AlertDialog.Builder(requireContext())
+
+        val scrollView = ScrollView(requireContext())
+        scrollView.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT
+        )
+
+        val linearLayout = LinearLayout(requireContext())
+        linearLayout.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        linearLayout.orientation = LinearLayout.VERTICAL
+
+        val showMemberList = TextView(requireContext())
+        val textViewlayoutParams = ViewGroup.MarginLayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        textViewlayoutParams.setMargins(10, 10, 10, 10)
+        showMemberList.layoutParams = textViewlayoutParams
+        showMemberList.text="${storeName}의 근무시간"
+        showMemberList.textSize= 15f
+        showMemberList.setTypeface(null, Typeface.BOLD)
+
+        linearLayout.addView(showMemberList)
+
+        val spinner = Spinner(requireContext())
+        val spinnerLayoutParams = ViewGroup.MarginLayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        spinnerLayoutParams.setMargins(10, 10, 10, 10)
+        spinner.layoutParams = spinnerLayoutParams
+
+        val monthList = resources.getStringArray(R.array.monthList)
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, monthList)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+
+        linearLayout.addView(spinner)
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                val selectedMonth = spinner.selectedItem.toString()
+                showMemberWorkDuration(storeName, selectedMonth, linearLayout)
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+
+        }
+
+        scrollView.addView(linearLayout)
+
+        builder.setView(scrollView)
+
+        builder.setNegativeButton("확인") { dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.create().show()
+    }
+
+    private fun showMemberWorkDuration(storeName: String, selectedMonth: String, linearLayout: LinearLayout) {
+        val userRef = firestore.collection("users")
+        userRef.whereEqualTo("storeName", storeName)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (documents.isEmpty) {
+                    Log.d("MypageFragment", "해당 storeName을 가진 사용자를 찾을 수 없습니다.")
+                    return@addOnSuccessListener
+                }
+                for (document in documents) {
+                    val userName = document.getString("name").toString()
+                    val userId = document.id
+
+                    val formattedDate = "2023년 ${selectedMonth}월 근무시간"
+                    val dataRef = firestore.collection("users").document(userId)
+                        .collection("total_workDuration").document(formattedDate)
+
+                    dataRef.get()
+                        .addOnSuccessListener { dataDocument ->
+                            if(dataDocument.exists()) {
+                                val month_workDuration = dataDocument.getString("2023년 ${selectedMonth}월 근무시간")
+                                if (month_workDuration != null) {
+                                    val cardView = showMemberCardView(month_workDuration, userName)
+                                    linearLayout.addView(cardView)
+                                }
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener { e: Exception ->
+                Log.e("MypageFragment", "오류 발생: ${e}")
+            }
+    }
+
+
+    private fun showMemberCardView(month_workDuration: String, userName: String): CardView {
+        val cardView = CardView(requireContext())
+
+        val layoutParams = ViewGroup.MarginLayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        layoutParams.setMargins(20, 20, 20, 20)
+        cardView.layoutParams = layoutParams
+        cardView.cardElevation = 20f
+        cardView.radius = 50f
+        cardView.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.gray))
+
+        val linearLayout = LinearLayout(requireContext())
+        linearLayout.orientation = LinearLayout.VERTICAL
+        linearLayout.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        linearLayout.setPadding(16, 16, 16, 16)
+
+        val cardView_storeName = TextView(requireContext())
+        cardView_storeName.text="${userName}님"
+        cardView_storeName.textSize = 20f
+        cardView_storeName.setTypeface(null, Typeface.BOLD)
+
+        linearLayout.addView(cardView_storeName)
+
+        val storeTime = TextView(requireContext())
+        storeTime.text="${userName}의 총 근무시간: ${month_workDuration}"
+        storeTime.textSize = 18f
+
+        linearLayout.addView(storeTime)
+
+        cardView.addView(linearLayout)
+
+        return cardView
     }
 
     private fun loadProfileImage(imageView: ImageView) {
