@@ -2,6 +2,7 @@ package org.techtown.albastack
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -44,7 +45,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.menu_mypage -> {
                     val mypageFragment = MypageFragment()
-                    replaceFragment(mypageFragment)
+                    try {
+                        replaceFragment(mypageFragment)
+                    } catch (e: Exception) {
+                        Log.e("MainActivity", "오류 발생: ${e.message}")
+                    }
                     true
                 } else -> false
             }
