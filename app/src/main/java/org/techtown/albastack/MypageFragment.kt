@@ -485,7 +485,7 @@ class MypageFragment : Fragment() {
 
                         // TextView에서 사용자 이름 설정
                         userName?.let {
-                            textView.text = "$it 님 안녕하세요!"
+                            textView.text = "${it}님 안녕하세요!"
                         }
                     }
                 }
