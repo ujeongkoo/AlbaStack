@@ -1,7 +1,5 @@
 # AlbaStack
 
----
-
 ## ⭐’AlbaStack’이란?
 
 AlbaStack은 근무 시간 계산에 어려움을 겪고 계신 자영업자 사장님들과 직원들을 위해 고안되었습니다. 직원들의 근무시간을 효과적으로 관리하고 싶으신가요? 본인이 일한 시간이 정확하게 기억이 나지 않아 급여가 맞게 들어왔는지 모르겠나요? AlbaStack이 여러분의 업무를 편리하게 지원합니다! AlbaStack은 근무시간을 기록해주는 혁신적인 플랫폼으로, 더 이상 근무시간 관리에 대한 고민을 갖지 않아도 됩니다.
@@ -33,7 +31,3 @@ AlbaStack은 근무 시간 계산에 어려움을 겪고 계신 자영업자 사
 AlbaStack은 Kotlin 기반의 Android Studio, Firebase를 통해 개발되었습니다!
 
 Github: https://github.com/ujeongkoo/AlbaStack.git
-
----
-
-[AlbaStack 개발 일지](https://www.notion.so/AlbaStack-e4e5d9f3f23649e7b026cd24f58e2ee8?pvs=21)
